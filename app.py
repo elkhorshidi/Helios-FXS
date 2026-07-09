@@ -23,27 +23,105 @@ st.set_page_config(page_title="داشبورد تصمیم رفع تعهد ارز�
 st.markdown(
     """
     <style>
-    html, body, [class*="css"], .stApp {direction: rtl; text-align: right;}
+    html, body, [class*="css"], .stApp {
+        direction: rtl;
+        text-align: right;
+    }
     .block-container {padding-top: 1.5rem; max-width: 1220px;}
-    [data-testid="stSidebar"] {direction: rtl; text-align: right;}
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
+    .stApp p, .stApp li, .stApp label, .stApp span, .stApp div {
+        text-align: right;
+    }
+    [data-testid="stSidebar"], [data-testid="stSidebar"] * {
+        direction: rtl;
+        text-align: right;
+    }
+    [data-testid="stSidebar"] [role="radiogroup"],
+    [data-testid="stSidebar"] [role="radiogroup"] label {
+        align-items: flex-end;
+        justify-content: flex-start;
+    }
+    [data-testid="stWidgetLabel"],
+    [data-testid="stMarkdownContainer"],
+    [data-testid="stCaptionContainer"],
+    [data-testid="stAlert"],
+    [data-testid="stExpander"],
+    [data-testid="stExpander"] summary,
+    [data-testid="stForm"],
+    [data-testid="stRadio"],
+    [data-testid="stCheckbox"],
+    [data-testid="stMultiSelect"],
+    [data-testid="stTextInput"],
+    [data-testid="stNumberInput"] {
+        direction: rtl;
+        text-align: right;
+    }
+    [data-testid="stAlert"] *,
+    [data-testid="stExpander"] *,
+    [data-testid="stWidgetLabel"] * {
+        direction: rtl;
+        text-align: right;
+    }
     [data-testid="stMetric"] {
         background: #ffffff;
         border: 1px solid #e5e7eb;
         border-radius: 8px;
         padding: 0.85rem 0.95rem;
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        direction: rtl;
+        text-align: right;
     }
     [data-testid="stMetricLabel"] {font-size: 0.82rem; color: #475569;}
     [data-testid="stMetricValue"] {font-size: 1.25rem; color: #0f172a;}
-    .stButton > button, .stDownloadButton > button {border-radius: 8px;}
-    .stDataFrame, .stDataEditor {direction: rtl;}
-    textarea {direction: ltr; text-align: left;}
+    [data-testid="stMetricLabel"],
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricDelta"] {
+        direction: rtl;
+        text-align: right;
+    }
+    .stButton, .stDownloadButton {
+        direction: rtl;
+        text-align: right;
+    }
+    .stButton > button, .stDownloadButton > button {
+        border-radius: 8px;
+        direction: rtl;
+        text-align: center;
+        justify-content: center;
+    }
+    input, textarea, [contenteditable="true"] {
+        direction: rtl;
+        text-align: right;
+    }
+    textarea {
+        direction: ltr;
+        text-align: left;
+        unicode-bidi: plaintext;
+    }
+    .stDataFrame, .stDataEditor, [data-testid="stDataFrame"], [data-testid="stDataEditor"] {
+        direction: rtl;
+        text-align: right;
+    }
+    [data-testid="stDataFrame"] *,
+    [data-testid="stDataEditor"] * {
+        text-align: right;
+    }
+    [data-testid="stVegaLiteChart"],
+    [data-testid="stPlotlyChart"],
+    [data-testid="stVegaLiteChart"] *,
+    [data-testid="stPlotlyChart"] *,
+    canvas, svg {
+        direction: ltr;
+        text-align: left;
+    }
     .rtl-card {
         border: 1px solid #e5e7eb;
         border-radius: 8px;
         padding: 0.9rem 1rem;
         background: #ffffff;
         margin-bottom: 0.75rem;
+        direction: rtl;
+        text-align: right;
     }
     .rtl-card-title {font-weight: 700; color: #0f172a; margin-bottom: 0.45rem;}
     .rtl-muted {color: #64748b; font-size: 0.9rem;}
@@ -53,7 +131,11 @@ st.markdown(
         line-height: 2;
         white-space: pre-wrap;
     }
-    code, pre {direction: ltr; text-align: left;}
+    code, pre, .ltr, .ltr * {
+        direction: ltr;
+        text-align: left;
+        unicode-bidi: isolate;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -137,10 +219,14 @@ def format_percent_display(value: object, unavailable_label: str = "—") -> str
     return format_percent(float(value))
 
 
+def ltr_value(value: object) -> str:
+    return f"\u2066{value}\u2069"
+
+
 def format_usd_display(value: object) -> str:
     if value is None or pd.isna(value):
         return "—"
-    return f"${format_usd(float(value))}"
+    return ltr_value(f"${format_usd(float(value))}")
 
 
 def user_decision_table(decisions: pd.DataFrame) -> pd.DataFrame:
