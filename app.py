@@ -197,6 +197,28 @@ GLOBAL_CSS = """
         min-height: 38px !important;
         white-space: normal !important;
     }
+    .st-key-rates_editor_rtl,
+    .st-key-rates_editor_rtl [data-testid="stDataEditor"] {
+        direction: rtl;
+        text-align: center;
+    }
+    .st-key-rates_editor_rtl [data-testid="stDataEditor"] *:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]) {
+        font-family: "Vazirmatn", sans-serif !important;
+    }
+    .st-key-rates_editor_rtl [data-testid="stDataEditor"] [role="columnheader"],
+    .st-key-rates_editor_rtl [data-testid="stDataEditor"] [role="gridcell"] {
+        text-align: center !important;
+        vertical-align: middle !important;
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
+    .st-key-rates_editor_rtl [data-testid="stDataEditor"] input,
+    .st-key-rates_editor_rtl [data-testid="stDataEditor"] textarea,
+    .st-key-rates_editor_rtl [data-testid="stDataEditor"] [contenteditable="true"] {
+        text-align: center !important;
+        direction: ltr;
+        unicode-bidi: isolate;
+    }
     [data-testid="stVegaLiteChart"],
     [data-testid="stPlotlyChart"],
     [data-testid="stVegaLiteChart"] *,
@@ -553,7 +575,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Decision-Table-RTL-v11"
+BUILD_MARKER = "Build: Editable-Rates-RTL-v12"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
@@ -869,20 +891,21 @@ def daily_input_page() -> None:
     st.subheader("جدول قابل ویرایش نرخ‌ها")
     editable = st.session_state.rates_df.copy()
     editable["Date"] = st.session_state.report_date
-    st.session_state.rates_df = st.data_editor(
-        editable,
-        num_rows="dynamic",
-        width="stretch",
-        hide_index=True,
-        column_order=("Date", "Market", "Buy", "Sell"),
-        column_config={
-            "Date": st.column_config.TextColumn("تاریخ"),
-            "Market": st.column_config.TextColumn("بازار", help="نام بازار باید یکی از Tether, Tehran, Istanbul, Sulaymaniyah, Dubai باشد."),
-            "Buy": st.column_config.NumberColumn("خرید", min_value=0.0, step=0.001, format="%.3f"),
-            "Sell": st.column_config.NumberColumn("فروش", min_value=0.0, step=0.001, format="%.3f"),
-            "Notes": st.column_config.TextColumn("توضیحات", help="توضیحات اختیاری؛ در محاسبات استفاده نمی‌شود."),
-        },
-    )
+    with st.container(key="rates_editor_rtl"):
+        st.session_state.rates_df = st.data_editor(
+            editable,
+            num_rows="dynamic",
+            width="stretch",
+            hide_index=True,
+            column_order=("Sell", "Buy", "Market", "Date", "Notes"),
+            column_config={
+                "Sell": st.column_config.NumberColumn("فروش", min_value=0.0, step=0.001, format="%.3f", width="small"),
+                "Buy": st.column_config.NumberColumn("خرید", min_value=0.0, step=0.001, format="%.3f", width="small"),
+                "Market": st.column_config.TextColumn("بازار", help="نام بازار باید یکی از Tether, Tehran, Istanbul, Sulaymaniyah, Dubai باشد.", width="medium"),
+                "Date": st.column_config.TextColumn("تاریخ", width="small"),
+                "Notes": st.column_config.TextColumn("توضیحات", help="توضیحات اختیاری؛ در محاسبات استفاده نمی‌شود.", width="medium"),
+            },
+        )
 
     with st.expander("یادداشت‌های فنی نرخ‌ها"):
         notes = st.session_state.rates_df[["Market", "Notes"]].copy()
