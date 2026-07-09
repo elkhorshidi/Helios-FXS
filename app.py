@@ -13,6 +13,12 @@ from calculation_engine import (
     decision_table_for_display,
     default_rates,
 )
+from customer_report import (
+    build_customer_report_data,
+    generate_customer_report_pdf,
+    generate_customer_report_png,
+    render_customer_report_card,
+)
 from report_generator import attach_recommendations, daily_report_text, format_percent, format_usd
 from storage import existing_versions, load_history, save_daily_report
 from validation import coerce_rates, parse_pasted_rates, validate_rates
@@ -130,6 +136,118 @@ st.markdown(
         text-align: right;
         line-height: 2;
         white-space: pre-wrap;
+    }
+    .customer-wrap {
+        max-width: 760px;
+        margin: 0 auto;
+    }
+    .customer-card {
+        background: #ffffff;
+        border: 1px solid #dbe3ef;
+        border-radius: 10px;
+        padding: 28px 32px;
+        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+        direction: rtl;
+        text-align: right;
+    }
+    .customer-topline {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 14px;
+        margin-bottom: 18px;
+    }
+    .customer-topline h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.45rem;
+        color: #0f172a;
+    }
+    .customer-topline p,
+    .customer-footer,
+    .customer-grid span,
+    .customer-meta span,
+    .customer-saving span {
+        color: #64748b;
+        margin: 0;
+    }
+    .customer-meta,
+    .customer-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin: 14px 0;
+    }
+    .customer-meta div,
+    .customer-grid div {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 14px;
+    }
+    .customer-meta strong,
+    .customer-grid strong {
+        display: block;
+        color: #0f172a;
+        font-size: 1.08rem;
+        margin-top: 5px;
+    }
+    .customer-highlight {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 10px;
+        padding: 18px;
+        margin: 18px 0 14px;
+    }
+    .customer-label {
+        color: #047857;
+        font-size: 0.92rem;
+        margin-bottom: 6px;
+    }
+    .customer-route {
+        color: #064e3b;
+        font-size: 1.75rem;
+        font-weight: 800;
+    }
+    .customer-saving {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin: 14px 0;
+    }
+    .customer-saving strong {
+        display: block;
+        color: #1e3a8a;
+        font-size: 1.35rem;
+        margin-top: 4px;
+    }
+    .customer-conclusion {
+        line-height: 1.9;
+        color: #334155;
+        font-size: 1.02rem;
+        margin: 16px 0;
+    }
+    .customer-empty {
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 10px;
+        padding: 22px;
+        color: #9a3412;
+        line-height: 1.9;
+        margin: 18px 0;
+    }
+    .customer-footer {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 14px;
+        margin-top: 18px;
+        font-size: 0.86rem;
+        line-height: 1.8;
+    }
+    @media (max-width: 760px) {
+        .customer-meta, .customer-grid {grid-template-columns: 1fr;}
+        .customer-card {padding: 22px;}
     }
     code, pre, .ltr, .ltr * {
         direction: ltr;
@@ -549,6 +667,57 @@ def history_page() -> None:
             st.dataframe(avg, hide_index=True)
 
 
+def customer_report_page() -> None:
+    st.title("گزارش مشتری")
+    st.caption("یک کارت روزانه و مشتری‌پسند برای ارسال در واتساپ یا خروجی گرفتن به صورت تصویر و PDF.")
+
+    decisions, errors = current_decisions()
+    origin_options = decisions["Origin Currency Persian"].tolist()
+
+    controls = st.columns([1, 1, 1])
+    with controls[0]:
+        selected_origin = st.selectbox("منشأ ارز", origin_options)
+    with controls[1]:
+        st.session_state.sample_amount_usd = st.number_input(
+            "مبلغ مبنا",
+            min_value=1.0,
+            value=float(st.session_state.sample_amount_usd),
+            step=10_000.0,
+            format="%.0f",
+        )
+    with controls[2]:
+        st.session_state.report_date = st.text_input("تاریخ گزارش", value=st.session_state.report_date)
+
+    decisions, errors = current_decisions()
+    selected_row = decisions.loc[decisions["Origin Currency Persian"] == selected_origin].iloc[0]
+    report_data = build_customer_report_data(selected_row, st.session_state.report_date, st.session_state.sample_amount_usd)
+
+    if errors:
+        st.warning("برخی ریت‌ها ناقص یا نامعتبر هستند. گزارش مشتری فقط در صورت وجود داده کافی برای منشأ انتخاب‌شده قابل خروجی گرفتن است.")
+
+    st.markdown("<div class='customer-wrap'>", unsafe_allow_html=True)
+    st.markdown(render_customer_report_card(report_data), unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    export_cols = st.columns([1, 1, 2])
+    png_bytes = generate_customer_report_png(report_data) if report_data.has_enough_data else None
+    pdf_bytes = generate_customer_report_pdf(report_data) if report_data.has_enough_data else None
+    export_cols[0].download_button(
+        "دانلود تصویر گزارش",
+        data=png_bytes or b"",
+        file_name="customer_fx_report.png",
+        mime="image/png",
+        disabled=not report_data.has_enough_data,
+    )
+    export_cols[1].download_button(
+        "دانلود PDF گزارش",
+        data=pdf_bytes or b"",
+        file_name="customer_fx_report.pdf",
+        mime="application/pdf",
+        disabled=not report_data.has_enough_data,
+    )
+
+
 def settings_page() -> None:
     st.title("راهنما و فرمول‌ها")
 
@@ -599,12 +768,14 @@ def settings_page() -> None:
 
 
 init_state()
-page = st.sidebar.radio("ناوبری", ["ورود روزانه", "گزارش تصمیم روزانه", "تاریخچه گزارش‌ها", "راهنما و فرمول‌ها"])
+page = st.sidebar.radio("ناوبری", ["ورود روزانه", "گزارش تصمیم روزانه", "گزارش مشتری", "تاریخچه گزارش‌ها", "راهنما و فرمول‌ها"])
 
 if page == "ورود روزانه":
     daily_input_page()
 elif page == "گزارش تصمیم روزانه":
     decision_report_page()
+elif page == "گزارش مشتری":
+    customer_report_page()
 elif page == "تاریخچه گزارش‌ها":
     history_page()
 else:

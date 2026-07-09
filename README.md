@@ -55,10 +55,23 @@ Important persistence note: local SQLite files on Streamlit Community Cloud are 
 
 - `app.py`: Streamlit UI, pages, downloads, charts, and save workflow.
 - `calculation_engine.py`: route formulas, active-route logic, ranking, and Excel reference comparison.
+- `customer_report.py`: client-facing customer report data mapping plus PNG/PDF rendering.
 - `report_generator.py`: Persian narrative generation.
 - `validation.py`: market-rate validation and paste parsing.
 - `storage.py`: SQLite persistence in `data/history.db`, created automatically when needed.
 - `tests/`: pytest coverage for calculations and narrative behavior.
+
+## Customer Report Exports
+
+The `گزارش مشتری` page creates a single client-facing recommendation card for one selected origin currency. It uses the existing approved calculation output and does not duplicate business logic.
+
+Exports are generated server-side:
+
+- PNG: rendered with Pillow.
+- PDF: rendered with ReportLab.
+- RTL/Persian shaping: handled with `arabic-reshaper` and `python-bidi`.
+
+Persian text rendering uses the bundled Vazirmatn font files in `assets/fonts/`. Vazirmatn is distributed under the SIL Open Font License; the license text is included at `assets/fonts/OFL.txt`. No local machine font paths are required.
 
 ## Core Formulas
 
