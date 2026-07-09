@@ -96,15 +96,17 @@ def render_customer_report_card(data: CustomerReportData) -> str:
                 <div class="customer-label">بهترین مسیر پیشنهادی</div>
                 <div class="customer-route">{data.best_route}</div>
             </div>
-            <div class="customer-grid">
-                <div><span>هزینه نهایی</span><strong>{format_percent(data.best_cost_percent)}</strong></div>
-                <div><span>هزینه دلاری</span><strong>{format_usd(data.best_cost_usd)}</strong></div>
-                <div><span>گزینه دوم</span><strong>{data.second_route}</strong></div>
-                <div><span>هزینه گزینه دوم</span><strong>{format_percent(data.second_cost_percent)}</strong></div>
+            <div class="customer-metrics">
+                <div class="customer-metric-card"><span class="customer-card-label">هزینه نهایی</span><strong><span class="customer-ltr">{format_percent(data.best_cost_percent)}</span></strong></div>
+                <div class="customer-metric-card"><span class="customer-card-label">هزینه دلاری</span><strong><span class="customer-ltr">{format_usd(data.best_cost_usd)}</span></strong></div>
+            </div>
+            <div class="customer-secondary">
+                <div class="customer-metric-card"><span class="customer-card-label">گزینه دوم</span><strong>{data.second_route}</strong></div>
+                <div class="customer-metric-card"><span class="customer-card-label">هزینه گزینه دوم</span><strong><span class="customer-ltr">{format_percent(data.second_cost_percent)}</span></strong></div>
             </div>
             <div class="customer-saving">
-                <span>صرفه‌جویی نسبت به گزینه دوم</span>
-                <strong>{format_percent(data.saving_percent)} معادل {format_usd(data.saving_usd)}</strong>
+                <span class="customer-saving-label">صرفه‌جویی نسبت به گزینه دوم</span>
+                <strong><span class="customer-ltr">{format_percent(data.saving_percent)}</span> معادل <span class="customer-ltr">{format_usd(data.saving_usd)}</span></strong>
             </div>
             <p class="customer-conclusion"><strong>جمع‌بندی کوتاه:</strong> {data.conclusion}</p>
             """
@@ -121,8 +123,8 @@ def render_customer_report_card(data: CustomerReportData) -> str:
                     </div>
                 </div>
                 <div class="customer-meta">
-                    <div><span>منشأ ارز</span><strong>{data.origin_label}</strong></div>
-                    <div><span>مبلغ مبنا</span><strong>{format_usd(data.base_amount_usd)}</strong></div>
+                    <div class="customer-info-card"><span class="customer-card-label">منشأ ارز</span><strong>{data.origin_label}</strong></div>
+                    <div class="customer-info-card"><span class="customer-card-label">مبلغ مبنا</span><strong><span class="customer-ltr">{format_usd(data.base_amount_usd)}</span></strong></div>
                 </div>
                 {body}
                 <div class="customer-footer"><strong>یادداشت تغییرپذیری ریت‌ها:</strong> {DISCLAIMER}</div>

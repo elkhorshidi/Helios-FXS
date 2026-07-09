@@ -138,102 +138,138 @@ st.markdown(
         white-space: pre-wrap;
     }
     .customer-wrap {
+        width: 100%;
         max-width: 760px;
         margin: 0 auto;
-    }
-    .customer-card {
-        background: #ffffff;
-        border: 1px solid #dbe3ef;
-        border-radius: 10px;
-        padding: 28px 32px;
-        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
         direction: rtl;
         text-align: right;
     }
+    .customer-card,
+    .customer-card * {
+        box-sizing: border-box;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        word-break: normal;
+        white-space: normal;
+    }
+    .customer-card {
+        width: 100%;
+        height: auto;
+        background: #ffffff;
+        border: 1px solid #dbe3ef;
+        border-radius: 12px;
+        padding: 28px 32px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+        direction: rtl;
+        text-align: right;
+        color: #0f172a;
+    }
     .customer-topline {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 16px;
         border-bottom: 1px solid #e5e7eb;
-        padding-bottom: 14px;
+        padding-bottom: 16px;
         margin-bottom: 18px;
     }
     .customer-topline h2 {
         margin: 0 0 8px 0;
-        font-size: 1.45rem;
+        font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+        line-height: 1.45;
+        font-weight: 800;
         color: #0f172a;
     }
     .customer-topline p,
     .customer-footer,
-    .customer-grid span,
-    .customer-meta span,
-    .customer-saving span {
+    .customer-label,
+    .customer-card-label,
+    .customer-saving-label {
         color: #64748b;
         margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.7;
     }
     .customer-meta,
-    .customer-grid {
+    .customer-metrics,
+    .customer-secondary {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
         margin: 14px 0;
+        align-items: stretch;
     }
-    .customer-meta div,
-    .customer-grid div {
+    .customer-info-card,
+    .customer-metric-card {
+        height: auto;
+        min-height: 96px;
         background: #f8fafc;
         border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 12px 14px;
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
-    .customer-meta strong,
-    .customer-grid strong {
+    .customer-info-card strong,
+    .customer-metric-card strong {
         display: block;
         color: #0f172a;
-        font-size: 1.08rem;
-        margin-top: 5px;
+        font-size: clamp(1.05rem, 2vw, 1.25rem);
+        line-height: 1.55;
+        font-weight: 800;
+        margin-top: 4px;
     }
     .customer-highlight {
+        width: 100%;
+        height: auto;
         background: #ecfdf5;
         border: 1px solid #a7f3d0;
-        border-radius: 10px;
-        padding: 18px;
+        border-radius: 12px;
+        padding: 18px 20px;
         margin: 18px 0 14px;
     }
     .customer-label {
         color: #047857;
-        font-size: 0.92rem;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     .customer-route {
         color: #064e3b;
-        font-size: 1.75rem;
-        font-weight: 800;
+        font-size: clamp(1.45rem, 3vw, 2rem);
+        line-height: 1.55;
+        font-weight: 900;
     }
     .customer-saving {
+        width: 100%;
+        height: auto;
         background: #eff6ff;
         border: 1px solid #bfdbfe;
-        border-radius: 10px;
+        border-radius: 12px;
         padding: 16px 18px;
-        margin: 14px 0;
+        margin: 16px 0;
     }
     .customer-saving strong {
         display: block;
         color: #1e3a8a;
-        font-size: 1.35rem;
+        font-size: clamp(1.18rem, 2.5vw, 1.45rem);
+        line-height: 1.65;
+        font-weight: 900;
         margin-top: 4px;
+    }
+    .customer-ltr {
+        direction: ltr;
+        unicode-bidi: isolate;
+        display: inline-block;
+        text-align: left;
     }
     .customer-conclusion {
         line-height: 1.9;
         color: #334155;
-        font-size: 1.02rem;
-        margin: 16px 0;
+        font-size: 1rem;
+        margin: 18px 0 0;
+        padding-top: 2px;
     }
     .customer-empty {
         background: #fff7ed;
         border: 1px solid #fed7aa;
-        border-radius: 10px;
-        padding: 22px;
+        border-radius: 12px;
+        padding: 20px;
         color: #9a3412;
         line-height: 1.9;
         margin: 18px 0;
@@ -243,11 +279,17 @@ st.markdown(
         padding-top: 14px;
         margin-top: 18px;
         font-size: 0.86rem;
-        line-height: 1.8;
+        line-height: 1.85;
     }
     @media (max-width: 760px) {
-        .customer-meta, .customer-grid {grid-template-columns: 1fr;}
-        .customer-card {padding: 22px;}
+        .customer-meta,
+        .customer-metrics,
+        .customer-secondary {
+            grid-template-columns: 1fr;
+        }
+        .customer-card {
+            padding: 22px;
+        }
     }
     code, pre, .ltr, .ltr * {
         direction: ltr;
@@ -261,7 +303,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Customer-Report-v4"
+BUILD_MARKER = "Build: Customer-Card-v5"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",

@@ -19,6 +19,9 @@ def test_customer_report_builds_for_every_origin_and_exports():
         assert report.has_enough_data is True
         assert html.startswith('<div class="customer-wrap">')
         assert "\n    <div" not in html
+        assert "customer-metrics" in html
+        assert "customer-secondary" in html
+        assert "customer-ltr" in html
         assert "جمع‌بندی کوتاه" in html
         assert "یادداشت تغییرپذیری ریت‌ها" in html
         assert "Route ID" not in html
