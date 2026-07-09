@@ -377,6 +377,64 @@ GLOBAL_CSS = """
             padding: 22px;
         }
     }
+    .origin-table-wrap {
+        width: 100%;
+        direction: rtl;
+        overflow-x: visible;
+    }
+    .origin-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-family: "Vazirmatn", sans-serif !important;
+        color: #0f172a;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+    }
+    .origin-table th {
+        text-align: center;
+        font-weight: 600;
+        background: #f8fafc;
+        color: #0f172a;
+        border: 1px solid #e5e7eb;
+        padding: 12px 16px;
+        line-height: 1.7;
+        white-space: normal;
+    }
+    .origin-table td {
+        padding: 12px 16px;
+        border: 1px solid #e5e7eb;
+        vertical-align: middle;
+        line-height: 1.7;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .origin-table tbody tr:nth-child(even) {
+        background: #f9fafb;
+    }
+    .origin-table .fa-cell {
+        text-align: right;
+        direction: rtl;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .origin-table .ltr-cell {
+        text-align: center;
+        direction: ltr;
+        unicode-bidi: isolate;
+        white-space: nowrap;
+        overflow-wrap: normal;
+    }
+    @media (max-width: 640px) {
+        .origin-table {
+            table-layout: auto;
+        }
+        .origin-table th,
+        .origin-table td {
+            padding: 10px 8px;
+            font-size: 0.9rem;
+        }
+    }
     code, pre, .ltr, .ltr * {
         direction: ltr;
         text-align: left;
@@ -434,7 +492,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Icon-Fix-v8"
+BUILD_MARKER = "Build: Origin-HTML-v10"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
@@ -984,20 +1042,26 @@ def settings_page() -> None:
         )
 
     with st.expander("۲. تعریف منشأ ارزها"):
-        origins = pd.DataFrame(
-            [
-                {"کد داخلی": "USD_Tehran", "عنوان فارسی": "دلار تهران", "بازار": "Tehran"},
-                {"کد داخلی": "USD_Istanbul", "عنوان فارسی": "دلار استانبول", "بازار": "Istanbul"},
-                {"کد داخلی": "USD_Sulaymaniyah", "عنوان فارسی": "دلار سلیمانیه", "بازار": "Sulaymaniyah"},
-                {"کد داخلی": "USD_Tether", "عنوان فارسی": "دلار تتر", "بازار": "Tether"},
-                {"کد داخلی": "AED_Dubai", "عنوان فارسی": "درهم دوبی", "بازار": "Dubai"},
-            ]
+        origin_rows = [
+            {"بازار": "Tehran", "عنوان فارسی": "دلار تهران", "کد داخلی": "USD_Tehran"},
+            {"بازار": "Istanbul", "عنوان فارسی": "دلار استانبول", "کد داخلی": "USD_Istanbul"},
+            {"بازار": "Sulaymaniyah", "عنوان فارسی": "دلار سلیمانیه", "کد داخلی": "USD_Sulaymaniyah"},
+            {"بازار": "Tether", "عنوان فارسی": "دلار تتر", "کد داخلی": "USD_Tether"},
+            {"بازار": "Dubai", "عنوان فارسی": "درهم دوبی", "کد داخلی": "AED_Dubai"},
+        ]
+        origin_body = "".join(
+            f'<tr><td class="ltr-cell">{row["بازار"]}</td><td class="fa-cell">{row["عنوان فارسی"]}</td><td class="ltr-cell">{row["کد داخلی"]}</td></tr>'
+            for row in origin_rows
         )
-        st.dataframe(
-            styled_table(origins, right_columns=["عنوان فارسی", "بازار"], center_columns=["کد داخلی"]),
-            width="stretch",
-            hide_index=True,
+        origin_table_html = (
+            '<div class="origin-table-wrap">'
+            '<table class="origin-table">'
+            "<thead><tr><th>بازار</th><th>عنوان فارسی</th><th>کد داخلی</th></tr></thead>"
+            f"<tbody>{origin_body}</tbody>"
+            "</table>"
+            "</div>"
         )
+        st.markdown(origin_table_html, unsafe_allow_html=True)
 
     with st.expander("۳. فرمول اظهارنامه بدون ارز"):
         st.markdown("هزینه کل برابر هزینه تبدیل منشأ ارز به دلار تهران به اضافه کارمزد اظهارنامه بدون ارز است.")
