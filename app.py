@@ -261,7 +261,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: RTL-Customer-v3"
+BUILD_MARKER = "Build: Customer-Report-v4"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
@@ -696,9 +696,8 @@ def customer_report_page() -> None:
     if errors:
         st.warning("برخی ریت‌ها ناقص یا نامعتبر هستند. گزارش مشتری فقط در صورت وجود داده کافی برای منشأ انتخاب‌شده قابل خروجی گرفتن است.")
 
-    st.markdown("<div class='customer-wrap'>", unsafe_allow_html=True)
-    st.markdown(render_customer_report_card(report_data), unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
+    report_html = render_customer_report_card(report_data)
+    st.markdown(report_html, unsafe_allow_html=True)
 
     export_cols = st.columns([1, 1, 2])
     png_bytes = generate_customer_report_png(report_data) if report_data.has_enough_data else None

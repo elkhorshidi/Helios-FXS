@@ -88,45 +88,48 @@ def build_customer_report_data(row: pd.Series | dict, report_date: str, base_amo
 
 def render_customer_report_card(data: CustomerReportData) -> str:
     if not data.has_enough_data:
-        body = f"<div class='customer-empty'>{NO_DATA_MESSAGE}</div>"
-        actions = ""
+        body = f'<div class="customer-empty">{NO_DATA_MESSAGE}</div>'
     else:
-        body = f"""
-        <div class="customer-highlight">
-            <div class="customer-label">بهترین مسیر پیشنهادی</div>
-            <div class="customer-route">{data.best_route}</div>
-        </div>
-        <div class="customer-grid">
-            <div><span>هزینه نهایی مسیر منتخب</span><strong>{format_percent(data.best_cost_percent)}</strong></div>
-            <div><span>هزینه دلاری بر اساس مبلغ مبنا</span><strong>{format_usd(data.best_cost_usd)}</strong></div>
-            <div><span>گزینه دوم</span><strong>{data.second_route}</strong></div>
-            <div><span>هزینه گزینه دوم</span><strong>{format_percent(data.second_cost_percent)}</strong></div>
-        </div>
-        <div class="customer-saving">
-            <span>صرفه‌جویی مسیر پیشنهادی نسبت به گزینه دوم</span>
-            <strong>{format_percent(data.saving_percent)} معادل {format_usd(data.saving_usd)}</strong>
-        </div>
-        <p class="customer-conclusion">{data.conclusion}</p>
-        """
-        actions = ""
+        body = _clean_html(
+            f"""
+            <div class="customer-highlight">
+                <div class="customer-label">بهترین مسیر پیشنهادی</div>
+                <div class="customer-route">{data.best_route}</div>
+            </div>
+            <div class="customer-grid">
+                <div><span>هزینه نهایی</span><strong>{format_percent(data.best_cost_percent)}</strong></div>
+                <div><span>هزینه دلاری</span><strong>{format_usd(data.best_cost_usd)}</strong></div>
+                <div><span>گزینه دوم</span><strong>{data.second_route}</strong></div>
+                <div><span>هزینه گزینه دوم</span><strong>{format_percent(data.second_cost_percent)}</strong></div>
+            </div>
+            <div class="customer-saving">
+                <span>صرفه‌جویی نسبت به گزینه دوم</span>
+                <strong>{format_percent(data.saving_percent)} معادل {format_usd(data.saving_usd)}</strong>
+            </div>
+            <p class="customer-conclusion"><strong>جمع‌بندی کوتاه:</strong> {data.conclusion}</p>
+            """
+        )
 
-    return f"""
-    <div class="customer-card">
-        <div class="customer-topline">
-            <div>
-                <h2>{REPORT_TITLE}</h2>
-                <p>تاریخ گزارش: <strong>{data.report_date}</strong></p>
+    return _clean_html(
+        f"""
+        <div class="customer-wrap">
+            <div class="customer-card">
+                <div class="customer-topline">
+                    <div>
+                        <h2>{REPORT_TITLE}</h2>
+                        <p>تاریخ گزارش: <strong>{data.report_date}</strong></p>
+                    </div>
+                </div>
+                <div class="customer-meta">
+                    <div><span>منشأ ارز</span><strong>{data.origin_label}</strong></div>
+                    <div><span>مبلغ مبنا</span><strong>{format_usd(data.base_amount_usd)}</strong></div>
+                </div>
+                {body}
+                <div class="customer-footer"><strong>یادداشت تغییرپذیری ریت‌ها:</strong> {DISCLAIMER}</div>
             </div>
         </div>
-        <div class="customer-meta">
-            <div><span>منشأ ارز</span><strong>{data.origin_label}</strong></div>
-            <div><span>مبلغ مبنا</span><strong>{format_usd(data.base_amount_usd)}</strong></div>
-        </div>
-        {body}
-        {actions}
-        <div class="customer-footer">{DISCLAIMER}</div>
-    </div>
-    """
+        """
+    )
 
 
 def generate_customer_report_png(data: CustomerReportData) -> bytes:
@@ -239,6 +242,10 @@ def generate_customer_report_pdf(data: CustomerReportData) -> bytes:
 
 def _font(path: Path, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.truetype(str(path), size=size)
+
+
+def _clean_html(html: str) -> str:
+    return "\n".join(line.strip() for line in textwrap.dedent(html).splitlines() if line.strip())
 
 
 def _shape(text: object) -> str:

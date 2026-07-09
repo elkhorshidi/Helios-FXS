@@ -14,9 +14,14 @@ def test_customer_report_builds_for_every_origin_and_exports():
 
     for _, row in decisions.iterrows():
         report = build_customer_report_data(row, "1405/04/17", 1_000_000)
+        html = render_customer_report_card(report)
         assert report.origin_label
         assert report.has_enough_data is True
-        assert "Route ID" not in render_customer_report_card(report)
+        assert html.startswith('<div class="customer-wrap">')
+        assert "\n    <div" not in html
+        assert "جمع‌بندی کوتاه" in html
+        assert "یادداشت تغییرپذیری ریت‌ها" in html
+        assert "Route ID" not in html
         assert generate_customer_report_png(report).startswith(b"\x89PNG")
         assert generate_customer_report_pdf(report).startswith(b"%PDF")
 
