@@ -68,7 +68,7 @@ GLOBAL_CSS = """
     body,
     p, li, label, input, textarea, select, option,
     h1, h2, h3, h4, h5, h6,
-    button,
+    button:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]),
     [data-testid="stAppViewContainer"],
     [data-testid="stSidebar"],
     [data-testid="stWidgetLabel"],
@@ -83,29 +83,11 @@ GLOBAL_CSS = """
     [data-baseweb="select"] {
         font-family: "Vazirmatn", sans-serif !important;
     }
-    .material-icons,
-    .material-icons-outlined,
-    .material-icons-round,
-    .material-icons-sharp,
-    .material-icons-two-tone,
-    .material-symbols-rounded,
-    .material-symbols-outlined,
-    .material-symbols-sharp,
-    [class*="material-icons"],
-    [class*="material-symbols"],
-    [data-testid="stIconMaterial"],
-    [data-testid="stExpander"] summary svg,
-    svg,
-    svg * {
-        font-family: "Material Symbols Rounded", "Material Icons", sans-serif !important;
-        direction: ltr;
-        text-align: center;
-    }
     .block-container {padding-top: 1.5rem; max-width: 1220px;}
     [data-testid="stAppViewContainer"],
     [data-testid="stSidebar"],
-    [data-testid="stSidebar"] *,
-    button,
+    [data-testid="stSidebar"] *:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]),
+    button:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]),
     input,
     textarea,
     select,
@@ -118,11 +100,14 @@ GLOBAL_CSS = """
         font-family: "Vazirmatn", sans-serif !important;
     }
     .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
-    .stApp p, .stApp li, .stApp label, .stApp span, .stApp div {
+    .stApp p, .stApp li, .stApp label,
+    .stApp span:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]),
+    .stApp div:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]) {
         text-align: right;
         font-family: "Vazirmatn", sans-serif !important;
     }
-    [data-testid="stSidebar"], [data-testid="stSidebar"] * {
+    [data-testid="stSidebar"],
+    [data-testid="stSidebar"] *:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]) {
         direction: rtl;
         text-align: right;
     }
@@ -146,9 +131,9 @@ GLOBAL_CSS = """
         direction: rtl;
         text-align: right;
     }
-    [data-testid="stAlert"] *,
-    [data-testid="stExpander"] *,
-    [data-testid="stWidgetLabel"] * {
+    [data-testid="stAlert"] *:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]),
+    [data-testid="stExpander"] *:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]),
+    [data-testid="stWidgetLabel"] *:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]) {
         direction: rtl;
         text-align: right;
     }
@@ -397,6 +382,48 @@ GLOBAL_CSS = """
         text-align: left;
         unicode-bidi: isolate;
     }
+    span.material-symbols-rounded,
+    span.material-symbols-outlined,
+    span.material-icons,
+    span.material-icons-outlined,
+    span.material-icons-round,
+    span.material-icons-sharp,
+    span.material-icons-two-tone,
+    [data-testid="stIconMaterial"],
+    [data-testid="stExpander"] span[data-testid="stIconMaterial"],
+    [data-testid="stExpander"] .material-symbols-rounded,
+    [data-testid="stExpander"] .material-symbols-outlined,
+    [data-testid="stSelectbox"] .material-symbols-rounded,
+    [data-testid="stSelectbox"] .material-symbols-outlined,
+    [data-testid="stMultiSelect"] .material-symbols-rounded,
+    [data-testid="stMultiSelect"] .material-symbols-outlined,
+    [data-testid="stSidebar"] .material-symbols-rounded,
+    [data-testid="stSidebar"] .material-symbols-outlined,
+    button .material-symbols-rounded,
+    button .material-symbols-outlined,
+    .material-symbols-rounded,
+    .material-symbols-outlined,
+    .material-icons,
+    .material-icons-outlined,
+    .material-icons-round,
+    .material-icons-sharp,
+    .material-icons-two-tone {
+        font-family: "Material Symbols Rounded", "Material Icons" !important;
+        font-weight: normal !important;
+        font-style: normal !important;
+        font-size: 20px !important;
+        line-height: 1 !important;
+        letter-spacing: normal !important;
+        text-transform: none !important;
+        display: inline-block !important;
+        white-space: nowrap !important;
+        word-wrap: normal !important;
+        direction: ltr !important;
+        text-align: center !important;
+        -webkit-font-feature-settings: "liga" !important;
+        font-feature-settings: "liga" !important;
+        -webkit-font-smoothing: antialiased !important;
+    }
     </style>
     """
 
@@ -407,7 +434,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Table-Fix-v7"
+BUILD_MARKER = "Build: Icon-Fix-v8"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
