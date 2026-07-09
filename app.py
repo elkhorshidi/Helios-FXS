@@ -261,7 +261,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: RTL-v2"
+BUILD_MARKER = "Build: RTL-Customer-v3"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
