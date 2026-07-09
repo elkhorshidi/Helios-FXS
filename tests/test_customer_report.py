@@ -1,5 +1,9 @@
 from calculation_engine import FeeSettings, calculate_daily_decisions, default_rates
 from customer_report import (
+    FONT_BOLD,
+    FONT_MEDIUM,
+    FONT_REGULAR,
+    FONT_SEMIBOLD,
     NO_DATA_MESSAGE,
     build_customer_report_data,
     generate_customer_report_pdf,
@@ -27,6 +31,12 @@ def test_customer_report_builds_for_every_origin_and_exports():
         assert "Route ID" not in html
         assert generate_customer_report_png(report).startswith(b"\x89PNG")
         assert generate_customer_report_pdf(report).startswith(b"%PDF")
+
+
+def test_bundled_vazirmatn_fonts_are_available():
+    for font_path in [FONT_REGULAR, FONT_MEDIUM, FONT_SEMIBOLD, FONT_BOLD]:
+        assert font_path.exists()
+        assert font_path.stat().st_size > 100_000
 
 
 def test_customer_report_missing_data_is_client_facing():

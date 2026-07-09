@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import base64
 from io import BytesIO
+from pathlib import Path
 import re
 
 import pandas as pd
@@ -24,19 +26,75 @@ from storage import existing_versions, load_history, save_daily_report
 from validation import coerce_rates, parse_pasted_rates, validate_rates
 
 
+BASE_DIR = Path(__file__).resolve().parent
+FONT_DIR = BASE_DIR / "assets" / "fonts"
+
+
+def font_face_css() -> str:
+    weights = {
+        400: "Vazirmatn-Regular.ttf",
+        500: "Vazirmatn-Medium.ttf",
+        600: "Vazirmatn-SemiBold.ttf",
+        700: "Vazirmatn-Bold.ttf",
+    }
+    declarations = []
+    for weight, filename in weights.items():
+        font_bytes = (FONT_DIR / filename).read_bytes()
+        encoded = base64.b64encode(font_bytes).decode("ascii")
+        declarations.append(
+            f"""
+            @font-face {{
+                font-family: 'Vazirmatn';
+                src: url(data:font/ttf;base64,{encoded}) format('truetype');
+                font-weight: {weight};
+                font-style: normal;
+                font-display: swap;
+            }}
+            """
+        )
+    return "\n".join(declarations)
+
+
 st.set_page_config(page_title="داشبورد تصمیم رفع تعهد ارزی", page_icon="FX", layout="wide")
 
-st.markdown(
-    """
+GLOBAL_CSS = """
     <style>
+    __FONT_FACE_CSS__
+    * {
+        font-family: "Vazirmatn", sans-serif !important;
+    }
     html, body, [class*="css"], .stApp {
         direction: rtl;
         text-align: right;
+        font-family: "Vazirmatn", sans-serif !important;
     }
     .block-container {padding-top: 1.5rem; max-width: 1220px;}
+    [data-testid="stAppViewContainer"],
+    [data-testid="stSidebar"],
+    [data-testid="stSidebar"] *,
+    button,
+    input,
+    textarea,
+    select,
+    option,
+    [role="button"],
+    [role="listbox"],
+    [role="option"],
+    [data-baseweb="select"],
+    [data-testid="stDataFrame"],
+    [data-testid="stDataEditor"],
+    [data-testid="stTable"],
+    [data-testid="stMetric"],
+    [data-testid="stAlert"],
+    [data-testid="stExpander"],
+    [data-testid="stDownloadButton"],
+    [data-testid="stMarkdownContainer"] {
+        font-family: "Vazirmatn", sans-serif !important;
+    }
     .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
     .stApp p, .stApp li, .stApp label, .stApp span, .stApp div {
         text-align: right;
+        font-family: "Vazirmatn", sans-serif !important;
     }
     [data-testid="stSidebar"], [data-testid="stSidebar"] * {
         direction: rtl;
@@ -143,6 +201,7 @@ st.markdown(
         margin: 0 auto;
         direction: rtl;
         text-align: right;
+        font-family: "Vazirmatn", sans-serif !important;
     }
     .customer-card,
     .customer-card * {
@@ -151,6 +210,7 @@ st.markdown(
         overflow-wrap: anywhere;
         word-break: normal;
         white-space: normal;
+        font-family: "Vazirmatn", sans-serif !important;
     }
     .customer-card {
         width: 100%;
@@ -297,13 +357,16 @@ st.markdown(
         unicode-bidi: isolate;
     }
     </style>
-    """,
+    """
+
+st.markdown(
+    GLOBAL_CSS.replace("__FONT_FACE_CSS__", font_face_css()),
     unsafe_allow_html=True,
 )
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Customer-Card-v5"
+BUILD_MARKER = "Build: Vazirmatn-v6"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",

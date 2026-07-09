@@ -71,7 +71,14 @@ Exports are generated server-side:
 - PDF: rendered with ReportLab.
 - RTL/Persian shaping: handled with `arabic-reshaper` and `python-bidi`.
 
-Persian text rendering uses the bundled Vazirmatn font files in `assets/fonts/`. Vazirmatn is distributed under the SIL Open Font License; the license text is included at `assets/fonts/OFL.txt`. No local machine font paths are required.
+Persian text rendering uses the bundled Vazirmatn font files in `assets/fonts/` for the Streamlit UI and report exports:
+
+- `Vazirmatn-Regular.ttf`
+- `Vazirmatn-Medium.ttf`
+- `Vazirmatn-SemiBold.ttf`
+- `Vazirmatn-Bold.ttf`
+
+Vazirmatn is distributed under the SIL Open Font License; the license text is included at `assets/fonts/OFL.txt`. No local machine font paths, Google Fonts CDN, or runtime internet access are required for typography. Keep the font files inside the repository with the included license.
 
 ## Core Formulas
 

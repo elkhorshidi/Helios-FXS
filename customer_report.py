@@ -21,6 +21,8 @@ from reportlab.pdfgen import canvas
 BASE_DIR = Path(__file__).resolve().parent
 FONT_DIR = BASE_DIR / "assets" / "fonts"
 FONT_REGULAR = FONT_DIR / "Vazirmatn-Regular.ttf"
+FONT_MEDIUM = FONT_DIR / "Vazirmatn-Medium.ttf"
+FONT_SEMIBOLD = FONT_DIR / "Vazirmatn-SemiBold.ttf"
 FONT_BOLD = FONT_DIR / "Vazirmatn-Bold.ttf"
 LOGO_PATH = BASE_DIR / "assets" / "logo.png"
 
@@ -138,11 +140,11 @@ def generate_customer_report_png(data: CustomerReportData) -> bytes:
     image = Image.new("RGB", (1080, 1350), "#f8fafc")
     draw = ImageDraw.Draw(image)
     regular = _font(FONT_REGULAR, 34)
-    regular_small = _font(FONT_REGULAR, 28)
+    medium_small = _font(FONT_MEDIUM, 28)
     small = _font(FONT_REGULAR, 24)
+    semibold_mid = _font(FONT_SEMIBOLD, 36)
     bold = _font(FONT_BOLD, 44)
     bold_big = _font(FONT_BOLD, 58)
-    bold_mid = _font(FONT_BOLD, 36)
 
     card = (70, 70, 1010, 1280)
     draw.rounded_rectangle(card, radius=28, fill="#ffffff", outline="#dbe3ef", width=2)
@@ -155,11 +157,11 @@ def generate_customer_report_png(data: CustomerReportData) -> bytes:
 
     _draw_rtl(draw, REPORT_TITLE, 940, y, bold, "#0f172a")
     y += 70
-    _draw_rtl(draw, f"تاریخ گزارش: {data.report_date}", 940, y, regular_small, "#475569")
+    _draw_rtl(draw, f"تاریخ گزارش: {data.report_date}", 940, y, medium_small, "#475569")
     y += 78
 
-    _draw_pair(draw, "منشأ ارز", data.origin_label, 940, y, regular_small, bold_mid)
-    _draw_pair(draw, "مبلغ مبنا", format_usd(data.base_amount_usd), 520, y, regular_small, bold_mid)
+    _draw_pair(draw, "منشأ ارز", data.origin_label, 940, y, medium_small, semibold_mid)
+    _draw_pair(draw, "مبلغ مبنا", format_usd(data.base_amount_usd), 520, y, medium_small, semibold_mid)
     y += 115
 
     if not data.has_enough_data:
@@ -167,20 +169,20 @@ def generate_customer_report_png(data: CustomerReportData) -> bytes:
         _draw_multiline_rtl(draw, NO_DATA_MESSAGE, 900, y + 55, regular, "#9a3412", width=34, line_gap=14)
     else:
         draw.rounded_rectangle((120, y, 940, y + 185), radius=24, fill="#ecfdf5", outline="#a7f3d0")
-        _draw_rtl(draw, "بهترین مسیر پیشنهادی", 900, y + 34, regular_small, "#047857")
+        _draw_rtl(draw, "بهترین مسیر پیشنهادی", 900, y + 34, medium_small, "#047857")
         _draw_rtl(draw, data.best_route, 900, y + 88, bold_big, "#064e3b")
         y += 225
 
-        _draw_metric_box(draw, "هزینه نهایی مسیر منتخب", format_percent(data.best_cost_percent), 550, y, 390, 145, bold_mid)
-        _draw_metric_box(draw, "هزینه دلاری بر اساس مبلغ مبنا", format_usd(data.best_cost_usd), 120, y, 390, 145, bold_mid)
+        _draw_metric_box(draw, "هزینه نهایی مسیر منتخب", format_percent(data.best_cost_percent), 550, y, 390, 145, semibold_mid)
+        _draw_metric_box(draw, "هزینه دلاری بر اساس مبلغ مبنا", format_usd(data.best_cost_usd), 120, y, 390, 145, semibold_mid)
         y += 185
-        _draw_metric_box(draw, "گزینه دوم", data.second_route, 550, y, 390, 145, bold_mid)
-        _draw_metric_box(draw, "هزینه گزینه دوم", format_percent(data.second_cost_percent), 120, y, 390, 145, bold_mid)
+        _draw_metric_box(draw, "گزینه دوم", data.second_route, 550, y, 390, 145, semibold_mid)
+        _draw_metric_box(draw, "هزینه گزینه دوم", format_percent(data.second_cost_percent), 120, y, 390, 145, semibold_mid)
         y += 185
 
         draw.rounded_rectangle((120, y, 940, y + 150), radius=22, fill="#eff6ff", outline="#bfdbfe")
-        _draw_rtl(draw, "صرفه‌جویی مسیر پیشنهادی نسبت به گزینه دوم", 900, y + 28, regular_small, "#1d4ed8")
-        _draw_rtl(draw, f"{format_percent(data.saving_percent)} معادل {format_usd(data.saving_usd)}", 900, y + 82, bold_mid, "#1e3a8a")
+        _draw_rtl(draw, "صرفه‌جویی مسیر پیشنهادی نسبت به گزینه دوم", 900, y + 28, medium_small, "#1d4ed8")
+        _draw_rtl(draw, f"{format_percent(data.saving_percent)} معادل {format_usd(data.saving_usd)}", 900, y + 82, semibold_mid, "#1e3a8a")
         y += 195
 
         _draw_multiline_rtl(draw, data.conclusion, 900, y, regular, "#334155", width=42, line_gap=12)
@@ -197,6 +199,8 @@ def generate_customer_report_pdf(data: CustomerReportData) -> bytes:
     buffer = BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=(width, height))
     pdfmetrics.registerFont(TTFont("Vazirmatn", str(FONT_REGULAR)))
+    pdfmetrics.registerFont(TTFont("Vazirmatn-Medium", str(FONT_MEDIUM)))
+    pdfmetrics.registerFont(TTFont("Vazirmatn-SemiBold", str(FONT_SEMIBOLD)))
     pdfmetrics.registerFont(TTFont("Vazirmatn-Bold", str(FONT_BOLD)))
 
     pdf.setFillColor(colors.HexColor("#f8fafc"))
@@ -207,10 +211,10 @@ def generate_customer_report_pdf(data: CustomerReportData) -> bytes:
     y = height - 125
     _pdf_rtl(pdf, REPORT_TITLE, 940, y, "Vazirmatn-Bold", 44, "#0f172a")
     y -= 58
-    _pdf_rtl(pdf, f"تاریخ گزارش: {data.report_date}", 940, y, "Vazirmatn", 28, "#475569")
+    _pdf_rtl(pdf, f"تاریخ گزارش: {data.report_date}", 940, y, "Vazirmatn-Medium", 28, "#475569")
     y -= 80
-    _pdf_rtl(pdf, f"منشأ ارز: {data.origin_label}", 940, y, "Vazirmatn-Bold", 34, "#0f172a")
-    _pdf_rtl(pdf, f"مبلغ مبنا: {format_usd(data.base_amount_usd)}", 520, y, "Vazirmatn-Bold", 34, "#0f172a")
+    _pdf_rtl(pdf, f"منشأ ارز: {data.origin_label}", 940, y, "Vazirmatn-SemiBold", 34, "#0f172a")
+    _pdf_rtl(pdf, f"مبلغ مبنا: {format_usd(data.base_amount_usd)}", 520, y, "Vazirmatn-SemiBold", 34, "#0f172a")
     y -= 105
 
     if not data.has_enough_data:
@@ -220,7 +224,7 @@ def generate_customer_report_pdf(data: CustomerReportData) -> bytes:
     else:
         pdf.setFillColor(colors.HexColor("#ecfdf5"))
         pdf.roundRect(120, y - 130, 820, 170, 24, fill=1, stroke=0)
-        _pdf_rtl(pdf, "بهترین مسیر پیشنهادی", 900, y - 20, "Vazirmatn", 27, "#047857")
+        _pdf_rtl(pdf, "بهترین مسیر پیشنهادی", 900, y - 20, "Vazirmatn-Medium", 27, "#047857")
         _pdf_rtl(pdf, data.best_route, 900, y - 82, "Vazirmatn-Bold", 48, "#064e3b")
         y -= 215
         _pdf_metric(pdf, "هزینه نهایی مسیر منتخب", format_percent(data.best_cost_percent), 550, y, 390, 135)
@@ -231,8 +235,8 @@ def generate_customer_report_pdf(data: CustomerReportData) -> bytes:
         y -= 175
         pdf.setFillColor(colors.HexColor("#eff6ff"))
         pdf.roundRect(120, y - 105, 820, 140, 20, fill=1, stroke=0)
-        _pdf_rtl(pdf, "صرفه‌جویی مسیر پیشنهادی نسبت به گزینه دوم", 900, y - 10, "Vazirmatn", 27, "#1d4ed8")
-        _pdf_rtl(pdf, f"{format_percent(data.saving_percent)} معادل {format_usd(data.saving_usd)}", 900, y - 65, "Vazirmatn-Bold", 34, "#1e3a8a")
+        _pdf_rtl(pdf, "صرفه‌جویی مسیر پیشنهادی نسبت به گزینه دوم", 900, y - 10, "Vazirmatn-Medium", 27, "#1d4ed8")
+        _pdf_rtl(pdf, f"{format_percent(data.saving_percent)} معادل {format_usd(data.saving_usd)}", 900, y - 65, "Vazirmatn-SemiBold", 34, "#1e3a8a")
         y -= 170
         _pdf_multiline(pdf, data.conclusion, 900, y, "Vazirmatn", 30, "#334155", width=44)
 
@@ -267,7 +271,7 @@ def _draw_pair(draw: ImageDraw.ImageDraw, label: str, value: str, right: int, y:
 
 def _draw_metric_box(draw: ImageDraw.ImageDraw, label: str, value: str, x: int, y: int, w: int, h: int, value_font) -> None:
     draw.rounded_rectangle((x, y, x + w, y + h), radius=18, fill="#f8fafc", outline="#e2e8f0")
-    _draw_rtl(draw, label, x + w - 28, y + 26, _font(FONT_REGULAR, 25), "#64748b")
+    _draw_rtl(draw, label, x + w - 28, y + 26, _font(FONT_MEDIUM, 25), "#64748b")
     _draw_rtl(draw, value, x + w - 28, y + 76, value_font, "#0f172a")
 
 
@@ -292,5 +296,5 @@ def _pdf_multiline(pdf: canvas.Canvas, text: str, right: float, y: float, font_n
 def _pdf_metric(pdf: canvas.Canvas, label: str, value: str, x: float, y: float, w: float, h: float) -> None:
     pdf.setFillColor(colors.HexColor("#f8fafc"))
     pdf.roundRect(x, y - h, w, h, 18, fill=1, stroke=0)
-    _pdf_rtl(pdf, label, x + w - 26, y - 42, "Vazirmatn", 23, "#64748b")
-    _pdf_rtl(pdf, value, x + w - 26, y - 92, "Vazirmatn-Bold", 31, "#0f172a")
+    _pdf_rtl(pdf, label, x + w - 26, y - 42, "Vazirmatn-Medium", 23, "#64748b")
+    _pdf_rtl(pdf, value, x + w - 26, y - 92, "Vazirmatn-SemiBold", 31, "#0f172a")
