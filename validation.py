@@ -53,7 +53,7 @@ def validate_rates(rates: pd.DataFrame) -> List[str]:
 
 
 def coerce_rates(rates: pd.DataFrame) -> pd.DataFrame:
-    clean = rates[["Date", "Market", "Buy", "Sell", "Notes"]].copy()
+    clean = rates.reindex(columns=["Date", "Market", "Buy", "Sell", "Notes"]).copy()
     clean["Market"] = clean["Market"].astype(str).str.strip()
     clean["Buy"] = pd.to_numeric(clean["Buy"], errors="coerce")
     clean["Sell"] = pd.to_numeric(clean["Sell"], errors="coerce")
