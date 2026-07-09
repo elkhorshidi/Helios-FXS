@@ -575,7 +575,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Editable-Rates-RTL-v12"
+BUILD_MARKER = "Build: Editable-Rates-RTL-v13"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",

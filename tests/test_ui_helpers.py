@@ -6,7 +6,7 @@ from app import BUILD_MARKER, GLOBAL_CSS, daily_input_page, render_decision_tabl
 
 
 def test_build_marker_for_table_fix():
-    assert BUILD_MARKER == "Build: Editable-Rates-RTL-v12"
+    assert BUILD_MARKER == "Build: Editable-Rates-RTL-v13"
 
 
 def test_styled_table_uses_vazirmatn_and_alignment():
@@ -59,4 +59,5 @@ def test_editable_rates_editor_is_scoped_and_ordered_for_rtl():
 
     assert 'st.container(key="rates_editor_rtl")' in source
     assert 'column_order=("Sell", "Buy", "Market", "Date", "Notes")' in source
+    assert source.index('"Date"') < source.index('"Notes"')
     assert ".st-key-rates_editor_rtl [data-testid=\"stDataEditor\"]" in GLOBAL_CSS
