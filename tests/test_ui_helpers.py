@@ -1,10 +1,10 @@
 import pandas as pd
 
-from app import BUILD_MARKER, GLOBAL_CSS, styled_table
+from app import BUILD_MARKER, GLOBAL_CSS, render_decision_table_html, styled_table
 
 
 def test_build_marker_for_table_fix():
-    assert BUILD_MARKER == "Build: Origin-HTML-v10"
+    assert BUILD_MARKER == "Build: Decision-Table-RTL-v11"
 
 
 def test_styled_table_uses_vazirmatn_and_alignment():
@@ -26,3 +26,27 @@ def test_origin_table_css_uses_static_html_table_rules():
     assert ".origin-table-wrap" in GLOBAL_CSS
     assert ".origin-table .ltr-cell" in GLOBAL_CSS
     assert "unicode-bidi: isolate" in GLOBAL_CSS
+
+
+def test_decision_table_html_uses_rtl_and_numeric_alignment():
+    df = pd.DataFrame(
+        [
+            {
+                "منشأ ارز": "دلار تهران",
+                "بهترین مسیر": "اظهارنامه بدون ارز",
+                "هزینه نهایی": "0.70%",
+                "هزینه دلاری": "$7,000",
+                "گزینه دوم": "اظهارنامه با ارز از مسیر دوبی",
+                "هزینه گزینه دوم": "1.20%",
+                "اختلاف با گزینه بعدی": "0.50%",
+                "صرفه‌جویی دلاری": "$5,000",
+            }
+        ]
+    )
+    html = render_decision_table_html(df)
+
+    assert 'class="decision-table-wrap"' in html
+    assert 'class="fa-cell"' in html
+    assert 'class="num-cell"' in html
+    assert html.index("منشأ ارز") < html.index("بهترین مسیر") < html.index("هزینه نهایی")
+    assert ".decision-table .num-cell" in GLOBAL_CSS

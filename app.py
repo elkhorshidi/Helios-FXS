@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from html import escape
 from io import BytesIO
 from pathlib import Path
 import re
@@ -382,6 +383,66 @@ GLOBAL_CSS = """
         direction: rtl;
         overflow-x: visible;
     }
+    .decision-table-wrap {
+        width: 100%;
+        direction: rtl;
+        overflow-x: visible;
+    }
+    .decision-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-family: "Vazirmatn", sans-serif !important;
+        color: #0f172a;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        direction: rtl;
+    }
+    .decision-table th {
+        text-align: center;
+        font-weight: 600;
+        background: #f8fafc;
+        color: #0f172a;
+        border: 1px solid #e5e7eb;
+        padding: 12px 10px;
+        line-height: 1.7;
+        vertical-align: middle;
+        white-space: normal;
+    }
+    .decision-table td {
+        padding: 12px 10px;
+        border: 1px solid #e5e7eb;
+        vertical-align: middle;
+        line-height: 1.7;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .decision-table tbody tr:nth-child(even) {
+        background: #f9fafb;
+    }
+    .decision-table .fa-cell {
+        text-align: right;
+        direction: rtl;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .decision-table .num-cell {
+        text-align: center;
+        direction: ltr;
+        unicode-bidi: isolate;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    @media (max-width: 900px) {
+        .decision-table {
+            table-layout: auto;
+        }
+        .decision-table th,
+        .decision-table td {
+            padding: 10px 8px;
+            font-size: 0.88rem;
+        }
+    }
     .origin-table {
         width: 100%;
         border-collapse: collapse;
@@ -492,7 +553,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Origin-HTML-v10"
+BUILD_MARKER = "Build: Decision-Table-RTL-v11"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
@@ -595,6 +656,29 @@ def user_decision_table(decisions: pd.DataFrame) -> pd.DataFrame:
             }
         )
     return pd.DataFrame(rows)
+
+
+DECISION_TEXT_COLUMNS = ["منشأ ارز", "بهترین مسیر", "گزینه دوم"]
+DECISION_NUMERIC_COLUMNS = ["هزینه نهایی", "هزینه دلاری", "هزینه گزینه دوم", "اختلاف با گزینه بعدی", "صرفه‌جویی دلاری"]
+
+
+def render_decision_table_html(decision_display: pd.DataFrame) -> str:
+    headers = "".join(f"<th>{escape(str(column))}</th>" for column in decision_display.columns)
+    body_rows = []
+    for _, row in decision_display.iterrows():
+        cells = []
+        for column in decision_display.columns:
+            class_name = "fa-cell" if column in DECISION_TEXT_COLUMNS else "num-cell"
+            cells.append(f'<td class="{class_name}">{escape(str(row[column]))}</td>')
+        body_rows.append(f"<tr>{''.join(cells)}</tr>")
+    return (
+        '<div class="decision-table-wrap">'
+        '<table class="decision-table">'
+        f"<thead><tr>{headers}</tr></thead>"
+        f"<tbody>{''.join(body_rows)}</tbody>"
+        "</table>"
+        "</div>"
+    )
 
 
 def user_history_table(history: pd.DataFrame) -> pd.DataFrame:
@@ -843,15 +927,7 @@ def decision_report_page() -> None:
 
     st.subheader("جدول تصمیم")
     decision_display = user_decision_table(decisions)
-    st.dataframe(
-        styled_table(
-            decision_display,
-            right_columns=["منشأ ارز", "بهترین مسیر", "گزینه دوم"],
-            center_columns=["هزینه نهایی", "هزینه دلاری", "هزینه گزینه دوم", "اختلاف با گزینه بعدی", "صرفه‌جویی دلاری"],
-        ),
-        width="stretch",
-        hide_index=True,
-    )
+    st.markdown(render_decision_table_html(decision_display), unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
     col1.download_button("دانلود جدول CSV", dataframe_csv_bytes(table), "daily_decision_table.csv", "text/csv")
