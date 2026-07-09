@@ -261,6 +261,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
+BUILD_MARKER = "Build: RTL-v2"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
@@ -768,6 +769,7 @@ def settings_page() -> None:
 
 
 init_state()
+st.sidebar.caption(BUILD_MARKER)
 page = st.sidebar.radio("ناوبری", ["ورود روزانه", "گزارش تصمیم روزانه", "گزارش مشتری", "تاریخچه گزارش‌ها", "راهنما و فرمول‌ها"])
 
 if page == "ورود روزانه":
