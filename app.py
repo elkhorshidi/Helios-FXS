@@ -174,7 +174,7 @@ GLOBAL_CSS = """
         text-align: left;
         unicode-bidi: plaintext;
     }
-    .stDataFrame, .stDataEditor, [data-testid="stDataFrame"], [data-testid="stDataEditor"] {
+    .stDataFrame, [data-testid="stDataFrame"] {
         direction: rtl;
         text-align: right;
     }
@@ -199,7 +199,7 @@ GLOBAL_CSS = """
     }
     .st-key-rates_editor_rtl,
     .st-key-rates_editor_rtl [data-testid="stDataEditor"] {
-        direction: rtl;
+        direction: ltr;
         text-align: center;
     }
     .st-key-rates_editor_rtl [data-testid="stDataEditor"] *:not(.material-symbols-rounded):not(.material-symbols-outlined):not(.material-icons):not([data-testid="stIconMaterial"]) {
@@ -575,7 +575,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Editable-Rates-RTL-v13"
+BUILD_MARKER = "Build: Notes-Column-Left-v14"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
@@ -897,7 +897,7 @@ def daily_input_page() -> None:
             num_rows="dynamic",
             width="stretch",
             hide_index=True,
-            column_order=("Sell", "Buy", "Market", "Date", "Notes"),
+            column_order=["Notes", "Date", "Market", "Buy", "Sell"],
             column_config={
                 "Sell": st.column_config.NumberColumn("فروش", min_value=0.0, step=0.001, format="%.3f", width="small"),
                 "Buy": st.column_config.NumberColumn("خرید", min_value=0.0, step=0.001, format="%.3f", width="small"),
