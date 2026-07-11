@@ -6,6 +6,7 @@ from io import BytesIO
 from pathlib import Path
 import re
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -516,7 +517,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Editable-Rates-Order-v16"
+BUILD_MARKER = "Build: History-Charts-v17"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
@@ -711,6 +712,114 @@ def technical_notes_table(rates_df: pd.DataFrame) -> pd.DataFrame:
     for market in markets:
         rows.append({"بازار": market, "توضیحات": note_by_market.get(market, "")})
     return pd.DataFrame(rows)
+
+
+ROUTE_CHART_LABELS = {
+    "No-FX Cost %": "اظهارنامه بدون ارز",
+    "Dubai Route Cost %": "مسیر دوبی",
+    "Istanbul Direct Cost %": "مسیر مستقیم استانبول",
+}
+
+
+def sortable_report_date(value: object) -> str:
+    return display_cell_value(value).replace("/", "")
+
+
+def latest_history_versions(history: pd.DataFrame) -> pd.DataFrame:
+    if history.empty:
+        return history.copy()
+    latest = history.copy()
+    latest["_date_sort"] = latest["report_date"].map(sortable_report_date)
+    latest["_version_sort"] = pd.to_numeric(latest["version"], errors="coerce").fillna(0)
+    latest = latest.sort_values(["_date_sort", "Origin Currency Persian", "_version_sort"])
+    latest = latest.drop_duplicates(["report_date", "Origin Currency Persian"], keep="last")
+    return latest.drop(columns=["_date_sort", "_version_sort"])
+
+
+def best_cost_chart_data(history: pd.DataFrame) -> pd.DataFrame:
+    latest = latest_history_versions(history)
+    if latest.empty:
+        return pd.DataFrame(columns=["تاریخ", "date_sort", "منشأ ارز", "هزینه نهایی", "هزینه نهایی متنی", "بهترین مسیر"])
+    chart = latest.dropna(subset=["Best Cost %"]).copy()
+    if chart.empty:
+        return pd.DataFrame(columns=["تاریخ", "date_sort", "منشأ ارز", "هزینه نهایی", "هزینه نهایی متنی", "بهترین مسیر"])
+    chart["تاریخ"] = chart["report_date"].map(display_cell_value)
+    chart["date_sort"] = chart["report_date"].map(sortable_report_date)
+    chart["منشأ ارز"] = chart["Origin Currency Persian"]
+    chart["هزینه نهایی"] = chart["Best Cost %"].astype(float) * 100
+    chart["هزینه نهایی متنی"] = chart["Best Cost %"].map(format_percent_display)
+    chart["بهترین مسیر"] = chart["Best Route"].map(display_cell_value)
+    return chart.sort_values(["منشأ ارز", "date_sort"])[["تاریخ", "date_sort", "منشأ ارز", "هزینه نهایی", "هزینه نهایی متنی", "بهترین مسیر"]]
+
+
+def route_cost_chart_data(history: pd.DataFrame, selected_origin: str) -> pd.DataFrame:
+    latest = latest_history_versions(history)
+    origin_history = latest[latest["Origin Currency Persian"] == selected_origin].copy()
+    rows = []
+    for _, row in origin_history.iterrows():
+        for column, route_label in ROUTE_CHART_LABELS.items():
+            value = row.get(column)
+            if value is None or pd.isna(value):
+                continue
+            rows.append(
+                {
+                    "تاریخ": display_cell_value(row["report_date"]),
+                    "date_sort": sortable_report_date(row["report_date"]),
+                    "منشأ ارز": selected_origin,
+                    "مسیر": route_label,
+                    "هزینه": float(value) * 100,
+                    "هزینه متنی": format_percent_display(value),
+                }
+            )
+    return pd.DataFrame(rows).sort_values(["مسیر", "date_sort"]) if rows else pd.DataFrame(columns=["تاریخ", "date_sort", "منشأ ارز", "مسیر", "هزینه", "هزینه متنی"])
+
+
+def best_cost_trend_chart(chart_data: pd.DataFrame) -> alt.Chart:
+    return (
+        alt.Chart(chart_data)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X("تاریخ:N", sort=alt.SortField("date_sort"), title="تاریخ"),
+            y=alt.Y("هزینه نهایی:Q", title="هزینه نهایی", axis=alt.Axis(format=".2f", labelExpr="datum.label + '%'")),
+            color=alt.Color("منشأ ارز:N", title="منشأ ارز"),
+            detail="منشأ ارز:N",
+            tooltip=[
+                alt.Tooltip("تاریخ:N", title="تاریخ"),
+                alt.Tooltip("منشأ ارز:N", title="منشأ ارز"),
+                alt.Tooltip("هزینه نهایی متنی:N", title="هزینه نهایی"),
+                alt.Tooltip("بهترین مسیر:N", title="بهترین مسیر"),
+            ],
+        )
+        .properties(height=360)
+        .configure(background="#ffffff")
+        .configure_view(stroke=None)
+        .configure_legend(orient="top", direction="horizontal", titleFont="Vazirmatn", labelFont="Vazirmatn")
+        .configure_axis(labelFont="Vazirmatn", titleFont="Vazirmatn", gridColor="#eef2f7", domainColor="#cbd5e1")
+    )
+
+
+def route_cost_comparison_chart(chart_data: pd.DataFrame) -> alt.Chart:
+    return (
+        alt.Chart(chart_data)
+        .mark_line(point=True)
+        .encode(
+            x=alt.X("تاریخ:N", sort=alt.SortField("date_sort"), title="تاریخ"),
+            y=alt.Y("هزینه:Q", title="هزینه مسیر", axis=alt.Axis(format=".2f", labelExpr="datum.label + '%'")),
+            color=alt.Color("مسیر:N", title="مسیر"),
+            detail="مسیر:N",
+            tooltip=[
+                alt.Tooltip("تاریخ:N", title="تاریخ"),
+                alt.Tooltip("مسیر:N", title="مسیر"),
+                alt.Tooltip("هزینه متنی:N", title="هزینه"),
+                alt.Tooltip("منشأ ارز:N", title="منشأ ارز"),
+            ],
+        )
+        .properties(height=340)
+        .configure(background="#ffffff")
+        .configure_view(stroke=None)
+        .configure_legend(orient="top", direction="horizontal", titleFont="Vazirmatn", labelFont="Vazirmatn")
+        .configure_axis(labelFont="Vazirmatn", titleFont="Vazirmatn", gridColor="#eef2f7", domainColor="#cbd5e1")
+    )
 
 
 def user_history_table(history: pd.DataFrame) -> pd.DataFrame:
@@ -1033,11 +1142,30 @@ def history_page() -> None:
     st.download_button("دانلود تاریخچه CSV", dataframe_csv_bytes(filtered), "fx_decision_history.csv", "text/csv")
 
     if not filtered.empty:
-        chart_df = filtered.rename(columns={"report_date": "Date"}).set_index("Date")
-        st.subheader("روند هزینه نهایی")
-        st.line_chart(chart_df, y="Best Cost %", color="#2563eb")
-        st.subheader("مقایسه هزینه مسیرها")
-        st.line_chart(chart_df[["No-FX Cost %", "Dubai Route Cost %", "Istanbul Direct Cost %"]])
+        st.subheader("روند هزینه نهایی به تفکیک منشأ ارز")
+        best_chart_data = best_cost_chart_data(filtered)
+        if best_chart_data.empty:
+            st.info("داده‌ای برای نمایش روند هزینه نهایی وجود ندارد.")
+        else:
+            st.altair_chart(best_cost_trend_chart(best_chart_data), use_container_width=True)
+
+        st.subheader("مقایسه هزینه مسیرها برای منشأ منتخب")
+        chart_history = latest_history_versions(filtered)
+        origin_chart_options = sorted(chart_history["Origin Currency Persian"].dropna().unique().tolist())
+        if not origin_chart_options:
+            st.info("داده‌ای برای مقایسه مسیرها وجود ندارد.")
+        else:
+            default_origin_index = origin_chart_options.index("دلار تهران") if "دلار تهران" in origin_chart_options else 0
+            selected_chart_origin = st.selectbox(
+                "منشأ ارز برای مقایسه مسیرها",
+                origin_chart_options,
+                index=default_origin_index,
+            )
+            route_chart_data = route_cost_chart_data(filtered, selected_chart_origin)
+            if route_chart_data.empty:
+                st.info("برای منشأ منتخب داده قابل نمایش برای مسیرها وجود ندارد.")
+            else:
+                st.altair_chart(route_cost_comparison_chart(route_chart_data), use_container_width=True)
 
         summary_cols = st.columns(2)
         with summary_cols[0]:
