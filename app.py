@@ -78,9 +78,7 @@ GLOBAL_CSS = """
     [data-testid="stAlert"],
     [data-testid="stExpander"],
     [data-testid="stMetric"],
-    [data-testid="stDataFrame"],
     [data-testid="stDataEditor"],
-    [data-testid="stTable"],
     [data-baseweb="select"] {
         font-family: "Vazirmatn", sans-serif !important;
     }
@@ -174,16 +172,10 @@ GLOBAL_CSS = """
         text-align: left;
         unicode-bidi: plaintext;
     }
-    .stDataFrame, [data-testid="stDataFrame"] {
-        direction: rtl;
-        text-align: right;
-    }
-    [data-testid="stDataFrame"] *,
     [data-testid="stDataEditor"] * {
         font-family: "Vazirmatn", sans-serif !important;
         line-height: 1.6;
     }
-    [data-testid="stDataFrame"] [role="columnheader"],
     [data-testid="stDataEditor"] [role="columnheader"] {
         text-align: center !important;
         font-weight: 600 !important;
@@ -191,7 +183,6 @@ GLOBAL_CSS = """
         white-space: normal !important;
         line-height: 1.6 !important;
     }
-    [data-testid="stDataFrame"] [role="gridcell"],
     [data-testid="stDataEditor"] [role="gridcell"] {
         line-height: 1.6 !important;
         min-height: 38px !important;
@@ -400,17 +391,12 @@ GLOBAL_CSS = """
             padding: 22px;
         }
     }
-    .origin-table-wrap {
+    .html-table-wrap {
         width: 100%;
         direction: rtl;
         overflow-x: visible;
     }
-    .decision-table-wrap {
-        width: 100%;
-        direction: rtl;
-        overflow-x: visible;
-    }
-    .decision-table {
+    .html-table {
         width: 100%;
         border-collapse: collapse;
         table-layout: fixed;
@@ -420,61 +406,7 @@ GLOBAL_CSS = """
         border: 1px solid #e5e7eb;
         direction: rtl;
     }
-    .decision-table th {
-        text-align: center;
-        font-weight: 600;
-        background: #f8fafc;
-        color: #0f172a;
-        border: 1px solid #e5e7eb;
-        padding: 12px 10px;
-        line-height: 1.7;
-        vertical-align: middle;
-        white-space: normal;
-    }
-    .decision-table td {
-        padding: 12px 10px;
-        border: 1px solid #e5e7eb;
-        vertical-align: middle;
-        line-height: 1.7;
-        overflow: visible;
-        text-overflow: clip;
-    }
-    .decision-table tbody tr:nth-child(even) {
-        background: #f9fafb;
-    }
-    .decision-table .fa-cell {
-        text-align: right;
-        direction: rtl;
-        white-space: normal;
-        overflow-wrap: anywhere;
-    }
-    .decision-table .num-cell {
-        text-align: center;
-        direction: ltr;
-        unicode-bidi: isolate;
-        white-space: normal;
-        overflow-wrap: anywhere;
-    }
-    @media (max-width: 900px) {
-        .decision-table {
-            table-layout: auto;
-        }
-        .decision-table th,
-        .decision-table td {
-            padding: 10px 8px;
-            font-size: 0.88rem;
-        }
-    }
-    .origin-table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed;
-        font-family: "Vazirmatn", sans-serif !important;
-        color: #0f172a;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-    }
-    .origin-table th {
+    .html-table th {
         text-align: center;
         font-weight: 600;
         background: #f8fafc;
@@ -483,8 +415,9 @@ GLOBAL_CSS = """
         padding: 12px 16px;
         line-height: 1.7;
         white-space: normal;
+        vertical-align: middle;
     }
-    .origin-table td {
+    .html-table td {
         padding: 12px 16px;
         border: 1px solid #e5e7eb;
         vertical-align: middle;
@@ -492,28 +425,36 @@ GLOBAL_CSS = """
         overflow: visible;
         text-overflow: clip;
     }
-    .origin-table tbody tr:nth-child(even) {
+    .html-table tbody tr:nth-child(even) {
         background: #f9fafb;
     }
-    .origin-table .fa-cell {
+    .html-table .fa-cell {
         text-align: right;
         direction: rtl;
         white-space: normal;
         overflow-wrap: anywhere;
     }
-    .origin-table .ltr-cell {
+    .html-table .ltr-cell,
+    .html-table .center-cell {
         text-align: center;
         direction: ltr;
         unicode-bidi: isolate;
-        white-space: nowrap;
-        overflow-wrap: normal;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .html-table .note-cell {
+        text-align: right;
+        direction: rtl;
+        unicode-bidi: plaintext;
+        white-space: normal;
+        overflow-wrap: anywhere;
     }
     @media (max-width: 640px) {
-        .origin-table {
+        .html-table {
             table-layout: auto;
         }
-        .origin-table th,
-        .origin-table td {
+        .html-table th,
+        .html-table td {
             padding: 10px 8px;
             font-size: 0.9rem;
         }
@@ -575,7 +516,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Notes-Column-Left-v14"
+BUILD_MARKER = "Build: Tables-Audit-v15"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
@@ -684,23 +625,92 @@ DECISION_TEXT_COLUMNS = ["منشأ ارز", "بهترین مسیر", "گزینه
 DECISION_NUMERIC_COLUMNS = ["هزینه نهایی", "هزینه دلاری", "هزینه گزینه دوم", "اختلاف با گزینه بعدی", "صرفه‌جویی دلاری"]
 
 
-def render_decision_table_html(decision_display: pd.DataFrame) -> str:
-    headers = "".join(f"<th>{escape(str(column))}</th>" for column in decision_display.columns)
-    body_rows = []
-    for _, row in decision_display.iterrows():
+def display_cell_value(value: object) -> str:
+    if value is None:
+        return ""
+    try:
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        pass
+    return str(value)
+
+
+def render_html_table(
+    dataframe: pd.DataFrame,
+    rtl_columns: list[str] | None = None,
+    ltr_columns: list[str] | None = None,
+    note_columns: list[str] | None = None,
+    column_labels: dict[str, str] | None = None,
+    column_widths: dict[str, str] | None = None,
+    table_layout: str = "fixed",
+) -> str:
+    rtl_columns = rtl_columns or []
+    ltr_columns = ltr_columns or []
+    note_columns = note_columns or []
+    column_labels = column_labels or {}
+    column_widths = column_widths or {}
+
+    colgroup = "".join(
+        f'<col style="width: {escape(column_widths[column])};">' if column in column_widths else "<col>"
+        for column in dataframe.columns
+    )
+    headers = "".join(f"<th>{escape(column_labels.get(column, str(column)))}</th>" for column in dataframe.columns)
+    rows = []
+    for _, row in dataframe.iterrows():
         cells = []
-        for column in decision_display.columns:
-            class_name = "fa-cell" if column in DECISION_TEXT_COLUMNS else "num-cell"
-            cells.append(f'<td class="{class_name}">{escape(str(row[column]))}</td>')
-        body_rows.append(f"<tr>{''.join(cells)}</tr>")
+        for column in dataframe.columns:
+            if column in note_columns:
+                class_name = "note-cell"
+            elif column in rtl_columns:
+                class_name = "fa-cell"
+            elif column in ltr_columns:
+                class_name = "ltr-cell"
+            else:
+                class_name = "center-cell"
+            cells.append(f'<td class="{class_name}">{escape(display_cell_value(row[column]))}</td>')
+        rows.append(f"<tr>{''.join(cells)}</tr>")
+
     return (
-        '<div class="decision-table-wrap">'
-        '<table class="decision-table">'
+        '<div class="html-table-wrap">'
+        f'<table class="html-table" style="table-layout: {escape(table_layout)};">'
+        f"<colgroup>{colgroup}</colgroup>"
         f"<thead><tr>{headers}</tr></thead>"
-        f"<tbody>{''.join(body_rows)}</tbody>"
+        f"<tbody>{''.join(rows)}</tbody>"
         "</table>"
         "</div>"
     )
+
+
+def render_decision_table_html(decision_display: pd.DataFrame) -> str:
+    return render_html_table(
+        decision_display,
+        rtl_columns=DECISION_TEXT_COLUMNS,
+        ltr_columns=DECISION_NUMERIC_COLUMNS,
+        column_widths={
+            "منشأ ارز": "12%",
+            "بهترین مسیر": "18%",
+            "هزینه نهایی": "10%",
+            "هزینه دلاری": "12%",
+            "گزینه دوم": "18%",
+            "هزینه گزینه دوم": "10%",
+            "اختلاف با گزینه بعدی": "10%",
+            "صرفه‌جویی دلاری": "10%",
+        },
+    )
+
+
+def technical_notes_table(rates_df: pd.DataFrame) -> pd.DataFrame:
+    note_by_market = {
+        str(row["Market"]).strip(): display_cell_value(row.get("Notes", "")).strip()
+        for _, row in rates_df.iterrows()
+        if display_cell_value(row.get("Market", "")).strip()
+    }
+    markets = ["Dubai", "Tether", "Tehran", "Istanbul", "Sulaymaniyah"]
+    rows = []
+    for market in markets:
+        rows.append({"بازار": market, "توضیحات": note_by_market.get(market, "")})
+    return pd.DataFrame(rows)
 
 
 def user_history_table(history: pd.DataFrame) -> pd.DataFrame:
@@ -772,66 +782,6 @@ def dataframe_excel_bytes(df: pd.DataFrame, sheet_name: str) -> bytes:
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
         df.to_excel(writer, index=False, sheet_name=sheet_name)
     return output.getvalue()
-
-
-def styled_table(
-    df: pd.DataFrame,
-    right_columns: list[str] | None = None,
-    center_columns: list[str] | None = None,
-):
-    right_columns = right_columns or []
-    center_columns = center_columns or []
-    styles = [
-        {
-            "selector": "table",
-            "props": [
-                ("font-family", '"Vazirmatn", sans-serif'),
-                ("width", "100%"),
-                ("border-collapse", "collapse"),
-                ("direction", "rtl"),
-            ],
-        },
-        {
-            "selector": "th",
-            "props": [
-                ("font-family", '"Vazirmatn", sans-serif'),
-                ("font-weight", "600"),
-                ("text-align", "center"),
-                ("vertical-align", "middle"),
-                ("background-color", "#f8fafc"),
-                ("color", "#0f172a"),
-                ("border", "1px solid #e2e8f0"),
-                ("padding", "10px 12px"),
-                ("line-height", "1.6"),
-                ("white-space", "normal"),
-            ],
-        },
-        {
-            "selector": "td",
-            "props": [
-                ("font-family", '"Vazirmatn", sans-serif'),
-                ("font-weight", "400"),
-                ("vertical-align", "middle"),
-                ("border", "1px solid #e2e8f0"),
-                ("padding", "10px 12px"),
-                ("line-height", "1.6"),
-                ("white-space", "normal"),
-                ("overflow-wrap", "anywhere"),
-            ],
-        },
-    ]
-    styler = df.style.hide(axis="index").set_table_styles(styles)
-    if right_columns:
-        styler = styler.set_properties(
-            subset=right_columns,
-            **{"text-align": "right", "direction": "rtl"},
-        )
-    if center_columns:
-        styler = styler.set_properties(
-            subset=center_columns,
-            **{"text-align": "center", "direction": "ltr"},
-        )
-    return styler
 
 
 def daily_input_page() -> None:
@@ -908,12 +858,16 @@ def daily_input_page() -> None:
         )
 
     with st.expander("یادداشت‌های فنی نرخ‌ها"):
-        notes = st.session_state.rates_df[["Market", "Notes"]].copy()
-        notes = notes.rename(columns={"Market": "بازار", "Notes": "توضیحات"})
-        st.dataframe(
-            styled_table(notes, right_columns=["بازار", "توضیحات"]),
-            width="stretch",
-            hide_index=True,
+        notes = technical_notes_table(st.session_state.rates_df)
+        st.markdown(
+            render_html_table(
+                notes,
+                ltr_columns=["بازار"],
+                note_columns=["توضیحات"],
+                column_widths={"بازار": "28%", "توضیحات": "72%"},
+                table_layout="auto",
+            ),
+            unsafe_allow_html=True,
         )
 
     errors = validate_rates(coerce_rates(st.session_state.rates_df))
@@ -977,7 +931,16 @@ def decision_report_page() -> None:
 
     with st.expander("اعتبارسنجی با سناریوی نمونه Excel"):
         reference = compare_to_excel_reference(decisions)
-        st.dataframe(styled_table(reference, center_columns=reference.columns.tolist()), width="stretch", hide_index=True)
+        reference_display = format_table(reference)
+        st.markdown(
+            render_html_table(
+                reference_display,
+                rtl_columns=["Python Best Route", "Excel Best Route"],
+                ltr_columns=[column for column in reference_display.columns if column not in ["Python Best Route", "Excel Best Route"]],
+                table_layout="auto",
+            ),
+            unsafe_allow_html=True,
+        )
 
 
 def history_page() -> None:
@@ -1049,14 +1012,23 @@ def history_page() -> None:
 
     st.subheader("جدول سوابق ذخیره‌شده")
     history_display = user_history_table(filtered)
-    st.dataframe(
-        styled_table(
+    st.markdown(
+        render_html_table(
             history_display,
-            right_columns=["منشأ ارز", "بهترین مسیر", "گزینه دوم"],
-            center_columns=["تاریخ گزارش", "نسخه", "هزینه نهایی", "هزینه دلاری", "صرفه‌جویی دلاری"],
+            rtl_columns=["منشأ ارز", "بهترین مسیر", "گزینه دوم"],
+            ltr_columns=["تاریخ گزارش", "نسخه", "هزینه نهایی", "هزینه دلاری", "صرفه‌جویی دلاری"],
+            column_widths={
+                "تاریخ گزارش": "12%",
+                "نسخه": "8%",
+                "منشأ ارز": "15%",
+                "بهترین مسیر": "20%",
+                "هزینه نهایی": "11%",
+                "هزینه دلاری": "12%",
+                "گزینه دوم": "14%",
+                "صرفه‌جویی دلاری": "8%",
+            },
         ),
-        width="stretch",
-        hide_index=True,
+        unsafe_allow_html=True,
     )
     st.download_button("دانلود تاریخچه CSV", dataframe_csv_bytes(filtered), "fx_decision_history.csv", "text/csv")
 
@@ -1071,13 +1043,19 @@ def history_page() -> None:
         with summary_cols[0]:
             st.write("تعداد انتخاب هر مسیر به عنوان بهترین گزینه")
             freq = filtered["Best Route"].value_counts().reset_index(name="تعداد").rename(columns={"Best Route": "مسیر"})
-            st.dataframe(styled_table(freq, right_columns=["مسیر"], center_columns=["تعداد"]), hide_index=True)
+            st.markdown(
+                render_html_table(freq, rtl_columns=["مسیر"], ltr_columns=["تعداد"], column_widths={"مسیر": "75%", "تعداد": "25%"}),
+                unsafe_allow_html=True,
+            )
         with summary_cols[1]:
             st.write("میانگین Best Cost % بر اساس منشأ ارز")
             avg = filtered.groupby("Origin Currency Persian", as_index=False)["Best Cost %"].mean()
             avg = avg.rename(columns={"Origin Currency Persian": "منشأ ارز", "Best Cost %": "میانگین هزینه"})
             avg["میانگین هزینه"] = avg["میانگین هزینه"].map(format_percent_display)
-            st.dataframe(styled_table(avg, right_columns=["منشأ ارز"], center_columns=["میانگین هزینه"]), hide_index=True)
+            st.markdown(
+                render_html_table(avg, rtl_columns=["منشأ ارز"], ltr_columns=["میانگین هزینه"], column_widths={"منشأ ارز": "60%", "میانگین هزینه": "40%"}),
+                unsafe_allow_html=True,
+            )
 
 
 def customer_report_page() -> None:
@@ -1141,26 +1119,24 @@ def settings_page() -> None:
         )
 
     with st.expander("۲. تعریف منشأ ارزها"):
-        origin_rows = [
-            {"بازار": "Tehran", "عنوان فارسی": "دلار تهران", "کد داخلی": "USD_Tehran"},
-            {"بازار": "Istanbul", "عنوان فارسی": "دلار استانبول", "کد داخلی": "USD_Istanbul"},
-            {"بازار": "Sulaymaniyah", "عنوان فارسی": "دلار سلیمانیه", "کد داخلی": "USD_Sulaymaniyah"},
-            {"بازار": "Tether", "عنوان فارسی": "دلار تتر", "کد داخلی": "USD_Tether"},
-            {"بازار": "Dubai", "عنوان فارسی": "درهم دوبی", "کد داخلی": "AED_Dubai"},
-        ]
-        origin_body = "".join(
-            f'<tr><td class="ltr-cell">{row["بازار"]}</td><td class="fa-cell">{row["عنوان فارسی"]}</td><td class="ltr-cell">{row["کد داخلی"]}</td></tr>'
-            for row in origin_rows
+        origin_table = pd.DataFrame(
+            [
+                {"بازار": "Tehran", "عنوان فارسی": "دلار تهران", "کد داخلی": "USD_Tehran"},
+                {"بازار": "Istanbul", "عنوان فارسی": "دلار استانبول", "کد داخلی": "USD_Istanbul"},
+                {"بازار": "Sulaymaniyah", "عنوان فارسی": "دلار سلیمانیه", "کد داخلی": "USD_Sulaymaniyah"},
+                {"بازار": "Tether", "عنوان فارسی": "دلار تتر", "کد داخلی": "USD_Tether"},
+                {"بازار": "Dubai", "عنوان فارسی": "درهم دوبی", "کد داخلی": "AED_Dubai"},
+            ]
         )
-        origin_table_html = (
-            '<div class="origin-table-wrap">'
-            '<table class="origin-table">'
-            "<thead><tr><th>بازار</th><th>عنوان فارسی</th><th>کد داخلی</th></tr></thead>"
-            f"<tbody>{origin_body}</tbody>"
-            "</table>"
-            "</div>"
+        st.markdown(
+            render_html_table(
+                origin_table,
+                rtl_columns=["عنوان فارسی"],
+                ltr_columns=["بازار", "کد داخلی"],
+                column_widths={"بازار": "30%", "عنوان فارسی": "35%", "کد داخلی": "35%"},
+            ),
+            unsafe_allow_html=True,
         )
-        st.markdown(origin_table_html, unsafe_allow_html=True)
 
     with st.expander("۳. فرمول اظهارنامه بدون ارز"):
         st.markdown("هزینه کل برابر هزینه تبدیل منشأ ارز به دلار تهران به اضافه کارمزد اظهارنامه بدون ارز است.")
