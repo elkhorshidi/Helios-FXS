@@ -13,7 +13,7 @@ from app import (
 
 
 def test_build_marker_for_table_fix():
-    assert BUILD_MARKER == "Build: Tables-Audit-v15"
+    assert BUILD_MARKER == "Build: Editable-Rates-Order-v16"
 
 
 def test_render_html_table_escapes_values_and_uses_direction_classes():
@@ -68,7 +68,7 @@ def test_editable_rates_editor_is_scoped_and_ordered_for_rtl():
     source = inspect.getsource(daily_input_page)
 
     assert 'st.container(key="rates_editor_rtl")' in source
-    order_literal = 'column_order=["Notes", "Date", "Market", "Buy", "Sell"]'
+    order_literal = 'column_order=["Notes", "Sell", "Buy", "Market", "Date"]'
     assert order_literal in source
     assert ".st-key-rates_editor_rtl [data-testid=\"stDataEditor\"]" in GLOBAL_CSS
 

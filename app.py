@@ -516,7 +516,7 @@ st.markdown(
 
 
 DATE_PATTERN = re.compile(r"^\d{4}/\d{2}/\d{2}$")
-BUILD_MARKER = "Build: Tables-Audit-v15"
+BUILD_MARKER = "Build: Editable-Rates-Order-v16"
 
 RATE_COLUMN_LABELS = {
     "Date": "تاریخ",
@@ -847,7 +847,7 @@ def daily_input_page() -> None:
             num_rows="dynamic",
             width="stretch",
             hide_index=True,
-            column_order=["Notes", "Date", "Market", "Buy", "Sell"],
+            column_order=["Notes", "Sell", "Buy", "Market", "Date"],
             column_config={
                 "Sell": st.column_config.NumberColumn("فروش", min_value=0.0, step=0.001, format="%.3f", width="small"),
                 "Buy": st.column_config.NumberColumn("خرید", min_value=0.0, step=0.001, format="%.3f", width="small"),
